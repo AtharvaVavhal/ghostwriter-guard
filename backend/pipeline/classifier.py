@@ -1,13 +1,9 @@
-"""
-classifier.py
--------------
-Loads the trained LogisticRegression model (model.pkl) and runs inference.
-Returns a probability score in [0, 1]: 0 = Human, 1 = AI.
-"""
-
 import joblib
 import numpy as np
 import os
+import nltk
+
+nltk.download("punkt_tab", quiet=True)
 
 _model = None
 _MODEL_PATH = os.path.join(os.path.dirname(__file__), "../models/model.pkl")
@@ -23,19 +19,35 @@ def _load_model():
 
 
 def extract_features(text: str) -> np.ndarray:
-    from backend.pipeline.perplexity import compute_perplexity
-    from backend.pipeline.burstiness import compute_burstiness
-
-    perplexity = compute_perplexity(text)
-    burstiness = compute_burstiness(text)
-
     words = text.split()
-    avg_word_len = np.mean([len(w) for w in words]) if words else 0.0
+    if not words:
+        return np.array([[0.0] * 8])
 
-    punct_chars = sum(1 for c in text if c in ".,;:!?\"'()-")
-    punct_ratio = punct_chars / max(len(text), 1)
+    unique_ratio = len(set(words)) / len(words)
+    avg_word_len = float(np.mean([len(w) for w in words]))
 
-    return np.array([[perplexity, burstiness, avg_word_len, punct_ratio]])
+    sentences = nltk.sent_tokenize(text)
+    word_counts = [len(s.split()) for s in sentences if s.strip()]
+    if len(word_counts) < 2:
+        wc = word_counts[0] if word_counts else 10
+        burstiness = float(min(max((wc - 5) / 35, 0.0), 1.0))
+    else:
+        burstiness = float(min(np.std(word_counts) / 15.0, 1.0))
+
+    punct_ratio = sum(1 for c in text if c in ".,;:!?\"'()-") / max(len(text), 1)
+    avg_sent_len = float(np.mean([len(s.split()) for s in sentences])) if sentences else 0.0
+
+    fillers = ["honestly", "actually", "basically", "literally", "just", "really", "tbh", "kinda", "sorta", "yeah"]
+    filler_ratio = sum(1 for w in words if w.lower() in fillers) / max(len(words), 1)
+
+    formal = ["furthermore", "moreover", "consequently", "therefore", "subsequently", "additionally", "nonetheless", "whereby", "thereby", "hence"]
+    formal_ratio = sum(1 for w in words if w.lower() in formal) / max(len(words), 1)
+
+    contractions = ["i'm", "it's", "don't", "can't", "won't", "i've", "we're", "they're", "i'd", "you're"]
+    contraction_ratio = sum(1 for w in words if w.lower() in contractions) / max(len(words), 1)
+
+    return np.array([[unique_ratio, avg_word_len, burstiness, punct_ratio,
+                      avg_sent_len, filler_ratio, formal_ratio, contraction_ratio]])
 
 
 def predict_score(text: str) -> float:
