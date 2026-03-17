@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException
-from schemas import AnalyzeRequest, AnalyzeResponse, SentenceResult
-from pipeline.perplexity import compute_perplexity
-from pipeline.burstiness import compute_burstiness
-from pipeline.classifier import predict_score
-from pipeline.fusion import fuse_signals
+from backend.schemas import AnalyzeRequest, AnalyzeResponse, SentenceResult
+from backend.pipeline.perplexity import compute_perplexity
+from backend.pipeline.burstiness import compute_burstiness
+from backend.pipeline.classifier import predict_score
+from backend.pipeline.fusion import fuse_signals
 import nltk
 
 nltk.download("punkt", quiet=True)

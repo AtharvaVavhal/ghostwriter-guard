@@ -23,8 +23,8 @@ def _load_model():
 
 
 def extract_features(text: str) -> np.ndarray:
-    from pipeline.perplexity import compute_perplexity
-    from pipeline.burstiness import compute_burstiness
+    from backend.pipeline.perplexity import compute_perplexity
+    from backend.pipeline.burstiness import compute_burstiness
 
     perplexity = compute_perplexity(text)
     burstiness = compute_burstiness(text)

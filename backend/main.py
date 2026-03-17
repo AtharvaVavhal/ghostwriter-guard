@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import analyze
+from backend.routers import analyze
 
 app = FastAPI(
     title="GhostWriter Guard API",
