@@ -2,36 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
-
 @layer base {
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
-
   body {
-    background-color: #0a0a0f;
+    background-color: #030712;
     color: #f9fafb;
-    font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
-
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: #0a0a0f; }
-  ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 2px; }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: #111827; }
+  ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
 }
 
 @layer utilities {
-  .animate-fade-in {
-    animation: fadeIn 0.6s ease forwards;
-    opacity: 0;
-  }
-  .animate-slide-up {
-    animation: slideUp 0.6s ease forwards;
-    opacity: 0;
-  }
-  .bg-white\/2 { background-color: rgba(255,255,255,0.02); }
-  .bg-white\/3 { background-color: rgba(255,255,255,0.03); }
-  .border-white\/8 { border-color: rgba(255,255,255,0.08); }
+  .animate-fade-in { animation: fadeIn 0.5s ease forwards; }
+  .animate-slide-up { animation: slideUp 0.5s ease forwards; }
+  .animate-scale-in { animation: scaleIn 0.3s ease forwards; }
 }
 
 @keyframes fadeIn {
@@ -42,4 +29,9 @@
 @keyframes slideUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
