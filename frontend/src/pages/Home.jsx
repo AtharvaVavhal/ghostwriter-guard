@@ -3,6 +3,7 @@ import TextInput from "../components/TextInput";
 import SentenceHeatmap from "../components/SentenceHeatmap";
 import ScoreBadge from "../components/ScoreBadge";
 import Loader from "../components/Loader";
+import DownloadReport from "../components/DownloadReport";
 import { analyzeText } from "../utils/api";
 
 export default function Home() {
@@ -45,7 +46,7 @@ export default function Home() {
 
       {/* Main */}
       <main className="max-w-4xl mx-auto px-6 py-10 space-y-8">
-        {/* Input Section */}
+        {/* Input */}
         <section>
           <h2 className="text-xl font-bold mb-2">Paste Assignment Text</h2>
           <p className="text-sm text-gray-400 mb-4">
@@ -66,24 +67,24 @@ export default function Home() {
 
         {/* Results */}
         {result && !loading && (
-          <section className="space-y-6">
+          <section className="space-y-6 animate-slide-up">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold">Results</h2>
-              <button
-                onClick={() => setResult(null)}
-                className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
-              >
-                Clear ✕
-              </button>
+              <div className="flex items-center gap-3">
+                <DownloadReport result={result} />
+                <button
+                  onClick={() => setResult(null)}
+                  className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                >
+                  Clear ✕
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Score Badge */}
               <div className="md:col-span-1">
                 <ScoreBadge score={result.overall_score} />
               </div>
-
-              {/* Stats */}
               <div className="md:col-span-2 grid grid-cols-3 gap-3 content-start">
                 <div className="p-4 rounded-xl bg-gray-900 border border-gray-800 text-center">
                   <p className="text-2xl font-bold text-white">{result.sentences.length}</p>
@@ -104,14 +105,12 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Legend */}
             <div className="flex gap-4 text-xs text-gray-400">
               <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400" /> Human (0–35%)</span>
               <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-400" /> Uncertain (35–65%)</span>
               <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-400" /> AI (65–100%)</span>
             </div>
 
-            {/* Sentence Heatmap */}
             <SentenceHeatmap sentences={result.sentences} />
           </section>
         )}
