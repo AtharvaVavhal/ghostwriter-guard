@@ -1,8 +1,6 @@
 """
 perplexity.py - Lightweight proxy for deployment (no torch required)
 """
-
-import math
 import re
 
 def compute_perplexity(text: str) -> float:
