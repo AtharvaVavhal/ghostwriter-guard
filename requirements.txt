@@ -1,0 +1,9 @@
+torch
+transformers
+spacy
+nltk
+scikit-learn
+numpy
+datasets
+joblib
+pandas
