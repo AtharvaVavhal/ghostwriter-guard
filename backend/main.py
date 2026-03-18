@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from routers import analyze
+import os
 
 app = FastAPI(
     title="GhostWriter Guard API",
@@ -8,28 +10,27 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Allow frontend (React dev server) to call this API
 app.add_middleware(
     CORSMiddleware,
-   allow_origins=[
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://localhost:3000",
-    "https://ghostwriter-guard-production.up.railway.app",
-    "https://ghostwriter-guard-production.up.railway.app",
-],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://localhost:3000",
+        "https://ghostwriter-guard-production.up.railway.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Register routers
 app.include_router(analyze.router, prefix="/api", tags=["Analysis"])
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def root():
-    return {"message": "GhostWriter Guard API is running. Visit /docs for Swagger UI."}
+    html_path = os.path.join(os.path.dirname(__file__), "index.html")
+    with open(html_path) as f:
+        return f.read()
 
 
 @app.get("/health")
