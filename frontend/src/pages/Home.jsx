@@ -53,7 +53,7 @@ export default function Home() {
               93.4% Accuracy
             </span>
             <span className="text-xs px-3 py-1.5 rounded-full border border-gray-700 text-gray-400">
-              VIT Pune
+API:OK
             </span>
           </div>
         </div>

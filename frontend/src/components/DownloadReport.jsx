@@ -22,7 +22,7 @@ export default function DownloadReport({ result, targetRef }) {
     pdf.setTextColor(255, 255, 255);
     pdf.setFontSize(20);
     pdf.setFont("helvetica", "bold");
-    pdf.text("👻 GhostWriter Guard", margin, 15);
+    pdf.text("GhostWriter Guard", margin, 15);
 
     pdf.setFontSize(9);
     pdf.setFont("helvetica", "normal");
