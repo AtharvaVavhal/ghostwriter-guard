@@ -16,6 +16,7 @@ app.add_middleware(
     "http://localhost:5174",
     "http://localhost:3000",
     "https://ghostwriter-guard-production.up.railway.app",
+    "https://ghostwriter-guard-production.up.railway.app",
 ],
     allow_credentials=True,
     allow_methods=["*"],
