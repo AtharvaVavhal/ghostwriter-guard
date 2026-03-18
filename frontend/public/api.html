@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GhostWriter Guard — API</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #030712; color: #f9fafb; font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+  
+  nav { border-bottom: 1px solid #1f2937; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; background: #030712/90; }
+  .logo { display: flex; align-items: center; gap: 0.75rem; }
+  .logo-icon { width: 32px; height: 32px; background: #10b981; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #000; font-size: 14px; }
+  .logo-text { font-weight: 700; font-size: 15px; }
+  .logo-sub { color: #6b7280; font-size: 12px; }
+  .badge { padding: 4px 12px; border-radius: 20px; border: 1px solid #10b98133; color: #10b981; background: #10b98111; font-size: 12px; }
+
+  .hero { text-align: center; padding: 4rem 2rem 2rem; }
+  .hero-tag { display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; border-radius: 20px; border: 1px solid #10b98133; color: #10b981; background: #10b98108; font-size: 12px; margin-bottom: 1.5rem; }
+  .hero h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; }
+  .hero h1 span { color: #10b981; }
+  .hero p { color: #6b7280; max-width: 500px; margin: 0 auto 2rem; font-size: 15px; }
+  .hero-badges { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+  .hero-badge { padding: 4px 12px; border-radius: 20px; border: 1px solid; font-size: 12px; }
+  .hero-badge.green { border-color: #10b98133; color: #10b981; }
+  .hero-badge.blue { border-color: #3b82f633; color: #60a5fa; }
+  .hero-badge.purple { border-color: #8b5cf633; color: #a78bfa; }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+
+  .endpoints { margin-bottom: 2rem; }
+  .endpoints h2 { font-size: 1rem; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem; }
+
+  .endpoint-card { background: #111827; border: 1px solid #1f2937; border-radius: 16px; overflow: hidden; margin-bottom: 1rem; }
+  .endpoint-header { padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; }
+  .method { padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; letter-spacing: 1px; }
+  .method.post { background: #10b98122; color: #10b981; border: 1px solid #10b98133; }
+  .method.get { background: #3b82f622; color: #60a5fa; border: 1px solid #3b82f633; }
+  .endpoint-path { font-family: monospace; font-size: 14px; color: #e5e7eb; }
+  .endpoint-desc { color: #6b7280; font-size: 13px; margin-left: auto; }
+
+  .endpoint-body { padding: 1.25rem; border-top: 1px solid #1f2937; }
+  .label { font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+  textarea { width: 100%; background: #0d1117; border: 1px solid #1f2937; border-radius: 10px; padding: 0.75rem; color: #e5e7eb; font-size: 13px; resize: vertical; min-height: 100px; font-family: 'Segoe UI', sans-serif; outline: none; transition: border-color 0.2s; }
+  textarea:focus { border-color: #10b981; }
+  .try-btn { margin-top: 0.75rem; padding: 8px 20px; background: #10b981; color: #000; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+  .try-btn:hover { background: #059669; }
+  .try-btn:disabled { background: #374151; color: #6b7280; cursor: not-allowed; }
+
+  .response-box { margin-top: 1rem; background: #0d1117; border: 1px solid #1f2937; border-radius: 10px; padding: 1rem; display: none; }
+  .response-box.show { display: block; }
+  .response-status { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .status-dot.success { background: #10b981; }
+  .status-dot.error { background: #ef4444; }
+  .status-dot.loading { background: #f59e0b; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  pre { font-family: monospace; font-size: 12px; color: #d1fae5; overflow-x: auto; white-space: pre-wrap; }
+
+  .results-visual { margin-top: 1rem; }
+  .sentence-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; margin-bottom: 0.5rem; border: 1px solid; }
+  .sentence-row.human { background: #10b98110; border-color: #10b98130; }
+  .sentence-row.uncertain { background: #eab30810; border-color: #eab30830; }
+  .sentence-row.ai { background: #ef444410; border-color: #ef444430; }
+  .sentence-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .sentence-text { font-size: 12px; color: #d1d5db; flex: 1; }
+  .sentence-score { font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .sentence-score.human { color: #10b981; }
+  .sentence-score.uncertain { color: #eab308; }
+  .sentence-score.ai { color: #ef4444; }
+  .score-bar { height: 3px; border-radius: 2px; margin-top: 4px; }
+
+  .overall-score { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; background: #1f2937; border-radius: 10px; margin-bottom: 1rem; }
+  .overall-pct { font-size: 1.5rem; font-weight: 700; }
+  .overall-label { font-size: 13px; color: #9ca3af; }
+
+  .schema-section { margin-top: 2rem; }
+  .schema-card { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+  .schema-title { font-size: 13px; font-weight: 600; color: #e5e7eb; margin-bottom: 0.75rem; font-family: monospace; }
+  .schema-field { display: flex; gap: 0.75rem; align-items: baseline; padding: 4px 0; border-bottom: 1px solid #1f293740; font-size: 12px; }
+  .schema-field:last-child { border-bottom: none; }
+  .field-name { font-family: monospace; color: #60a5fa; min-width: 120px; }
+  .field-type { color: #a78bfa; min-width: 80px; }
+  .field-desc { color: #6b7280; }
+
+  .base-url { background: #111827; border: 1px solid #1f2937; border-radius: 10px; padding: 0.75rem 1rem; font-family: monospace; font-size: 13px; color: #10b981; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; }
+  .copy-btn { padding: 4px 10px; background: #1f2937; border: 1px solid #374151; border-radius: 6px; color: #9ca3af; font-size: 11px; cursor: pointer; }
+  .copy-btn:hover { color: #fff; }
+
+  footer { text-align: center; padding: 2rem; color: #374151; font-size: 12px; border-top: 1px solid #111827; margin-top: 2rem; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon">G</div>
+    <div>
+      <div class="logo-text">GhostWriter Guard</div>
+      <div class="logo-sub">API Reference</div>
+    </div>
+  </div>
+  <div class="badge">v1.0.0</div>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">
+    <span style="width:6px;height:6px;background:#10b981;border-radius:50%;display:inline-block"></span>
+    REST API
+  </div>
+  <h1>GhostWriter Guard <span>API</span></h1>
+  <p>AI text detection for academic integrity. Analyze text sentence by sentence and detect AI authorship.</p>
+  <div class="hero-badges">
+    <span class="hero-badge green">93.4% Accuracy</span>
+    <span class="hero-badge blue">FastAPI</span>
+    <span class="hero-badge purple">8-Feature ML</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="base-url">
+    <span id="baseUrl">https://caring-charm-production-41d0.up.railway.app</span>
+    <button class="copy-btn" onclick="copyBase()">Copy</button>
+  </div>
+
+  <div class="endpoints">
+    <h2>Endpoints</h2>
+
+    <!-- POST /api/analyze -->
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="method post">POST</span>
+        <span class="endpoint-path">/api/analyze</span>
+        <span class="endpoint-desc">Analyze text for AI authorship</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="label">Request Body</div>
+        <textarea id="analyzeInput" placeholder='{"text": "Paste your text here to analyze..."}'>{
+  "text": "The systematic implementation of artificial intelligence has consequently revolutionized numerous sectors. Furthermore, the deployment of advanced algorithms has subsequently facilitated unprecedented improvements."
+}</textarea>
+        <button class="try-btn" onclick="callAnalyze()" id="analyzeBtn">Try it →</button>
+
+        <div class="response-box" id="analyzeResponse">
+          <div class="response-status">
+            <span class="status-dot" id="analyzeDot"></span>
+            <span id="analyzeStatus" style="font-size:12px;color:#9ca3af"></span>
+          </div>
+          <div id="analyzeVisual"></div>
+          <details style="margin-top:0.75rem">
+            <summary style="font-size:11px;color:#6b7280;cursor:pointer">Raw JSON</summary>
+            <pre id="analyzeJson" style="margin-top:0.5rem"></pre>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    <!-- GET /health -->
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/health</span>
+        <span class="endpoint-desc">Check API health</span>
+      </div>
+      <div class="endpoint-body">
+        <button class="try-btn" onclick="callHealth()" id="healthBtn">Try it →</button>
+        <div class="response-box" id="healthResponse">
+          <div class="response-status">
+            <span class="status-dot" id="healthDot"></span>
+            <span id="healthStatus" style="font-size:12px;color:#9ca3af"></span>
+          </div>
+          <pre id="healthJson"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- GET / -->
+    <div class="endpoint-card">
+      <div class="endpoint-header">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/</span>
+        <span class="endpoint-desc">Root endpoint</span>
+      </div>
+      <div class="endpoint-body">
+        <button class="try-btn" onclick="callRoot()" id="rootBtn">Try it →</button>
+        <div class="response-box" id="rootResponse">
+          <div class="response-status">
+            <span class="status-dot" id="rootDot"></span>
+            <span id="rootStatus" style="font-size:12px;color:#9ca3af"></span>
+          </div>
+          <pre id="rootJson"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schema -->
+  <div class="schema-section">
+    <h2 style="font-size:1rem;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:2px;margin-bottom:1rem">Schemas</h2>
+
+    <div class="schema-card">
+      <div class="schema-title">AnalyzeRequest</div>
+      <div class="schema-field">
+        <span class="field-name">text</span>
+        <span class="field-type">string</span>
+        <span class="field-desc">Text to analyze. Min length: 10 characters.</span>
+      </div>
+    </div>
+
+    <div class="schema-card">
+      <div class="schema-title">AnalyzeResponse</div>
+      <div class="schema-field">
+        <span class="field-name">sentences</span>
+        <span class="field-type">array</span>
+        <span class="field-desc">List of SentenceResult objects</span>
+      </div>
+      <div class="schema-field">
+        <span class="field-name">overall_score</span>
+        <span class="field-type">float</span>
+        <span class="field-desc">Mean AI probability [0.0 - 1.0]</span>
+      </div>
+    </div>
+
+    <div class="schema-card">
+      <div class="schema-title">SentenceResult</div>
+      <div class="schema-field">
+        <span class="field-name">sentence</span>
+        <span class="field-type">string</span>
+        <span class="field-desc">Individual sentence text</span>
+      </div>
+      <div class="schema-field">
+        <span class="field-name">score</span>
+        <span class="field-type">float</span>
+        <span class="field-desc">AI probability score: 0=Human, 1=AI</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  GhostWriter Guard API — Built with FastAPI · Deployed on Railway
+</footer>
+
+<script>
+const BASE = "https://caring-charm-production-41d0.up.railway.app";
+
+function copyBase() {
+  navigator.clipboard.writeText(BASE);
+}
+
+function getLabel(score) {
+  if (score < 0.35) return "human";
+  if (score < 0.65) return "uncertain";
+  return "ai";
+}
+
+function getColor(score) {
+  if (score < 0.35) return "#10b981";
+  if (score < 0.65) return "#eab308";
+  return "#ef4444";
+}
+
+async function callAnalyze() {
+  const btn = document.getElementById("analyzeBtn");
+  const box = document.getElementById("analyzeResponse");
+  const dot = document.getElementById("analyzeDot");
+  const status = document.getElementById("analyzeStatus");
+  const visual = document.getElementById("analyzeVisual");
+  const json = document.getElementById("analyzeJson");
+
+  btn.disabled = true;
+  btn.textContent = "Analyzing...";
+  box.classList.add("show");
+  dot.className = "status-dot loading";
+  status.textContent = "Sending request...";
+
+  try {
+    const body = JSON.parse(document.getElementById("analyzeInput").value);
+    const res = await fetch(`${BASE}/api/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+
+    dot.className = "status-dot success";
+    status.textContent = `200 OK · ${data.sentences.length} sentences analyzed`;
+
+    // Visual
+    const pct = Math.round(data.overall_score * 100);
+    const lbl = getLabel(data.overall_score);
+    const col = getColor(data.overall_score);
+    visual.innerHTML = `
+      <div class="overall-score">
+        <span class="overall-pct" style="color:${col}">${pct}%</span>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:${col}">${lbl === 'human' ? 'Likely Human' : lbl === 'uncertain' ? 'Uncertain' : 'Likely AI'}</div>
+          <div class="overall-label">Overall AI Probability</div>
+        </div>
+      </div>
+      <div class="results-visual">
+        ${data.sentences.map(s => {
+          const l = getLabel(s.score);
+          const c = getColor(s.score);
+          const p = Math.round(s.score * 100);
+          return `<div class="sentence-row ${l}">
+            <div class="sentence-dot" style="background:${c}"></div>
+            <div style="flex:1">
+              <div class="sentence-text">${s.sentence}</div>
+              <div class="score-bar" style="width:${p}%;background:${c}"></div>
+            </div>
+            <span class="sentence-score ${l}">${p}% ${l.charAt(0).toUpperCase()+l.slice(1)}</span>
+          </div>`;
+        }).join('')}
+      </div>`;
+
+    json.textContent = JSON.stringify(data, null, 2);
+  } catch(e) {
+    dot.className = "status-dot error";
+    status.textContent = "Error: " + e.message;
+    json.textContent = e.toString();
+  }
+
+  btn.disabled = false;
+  btn.textContent = "Try it →";
+}
+
+async function callHealth() {
+  const btn = document.getElementById("healthBtn");
+  const box = document.getElementById("healthResponse");
+  const dot = document.getElementById("healthDot");
+  const status = document.getElementById("healthStatus");
+  const json = document.getElementById("healthJson");
+
+  btn.disabled = true;
+  box.classList.add("show");
+  dot.className = "status-dot loading";
+  status.textContent = "Checking...";
+
+  try {
+    const res = await fetch(`${BASE}/health`);
+    const data = await res.json();
+    dot.className = "status-dot success";
+    status.textContent = "200 OK";
+    json.textContent = JSON.stringify(data, null, 2);
+  } catch(e) {
+    dot.className = "status-dot error";
+    status.textContent = "Error";
+    json.textContent = e.toString();
+  }
+  btn.disabled = false;
+  btn.textContent = "Try it →";
+}
+
+async function callRoot() {
+  const btn = document.getElementById("rootBtn");
+  const box = document.getElementById("rootResponse");
+  const dot = document.getElementById("rootDot");
+  const status = document.getElementById("rootStatus");
+  const json = document.getElementById("rootJson");
+
+  btn.disabled = true;
+  box.classList.add("show");
+  dot.className = "status-dot loading";
+  status.textContent = "Fetching...";
+
+  try {
+    const res = await fetch(`${BASE}/`);
+    const data = await res.json();
+    dot.className = "status-dot success";
+    status.textContent = "200 OK";
+    json.textContent = JSON.stringify(data, null, 2);
+  } catch(e) {
+    dot.className = "status-dot error";
+    status.textContent = "Error";
+    json.textContent = e.toString();
+  }
+  btn.disabled = false;
+  btn.textContent = "Try it →";
+}
+</script>
+</body>
+</html>
