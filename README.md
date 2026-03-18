@@ -6,10 +6,21 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.135-green)
 ![React](https://img.shields.io/badge/React-18-blue)
 ![Accuracy](https://img.shields.io/badge/Accuracy-93.4%25-brightgreen)
+![Deployed](https://img.shields.io/badge/Deployed-Railway-blueviolet)
 
 ---
 
-## 🧠 What It Does
+## 🌐 Live Demo
+
+**Frontend:** https://ghostwriter-guard-production.up.railway.app
+
+**Backend API:** https://caring-charm-production-41d0.up.railway.app
+
+**API Docs:** https://caring-charm-production-41d0.up.railway.app/docs
+
+---
+
+## 🎯 What It Does
 
 GhostWriter Guard analyzes submitted text and flags AI-written content at the sentence level:
 
@@ -17,21 +28,38 @@ GhostWriter Guard analyzes submitted text and flags AI-written content at the se
 - 🟡 **Yellow** = Uncertain (35–65%)
 - 🔴 **Red** = AI written (65–100%)
 
-It uses **3 signals** fused together:
-1. **GPT-2 Perplexity** — measures how "predictable" the text is
-2. **Burstiness** — measures variation in sentence lengths
-3. **ML Classifier** — LogisticRegression trained on 1.3M+ samples (93.4% accuracy)
+---
 
-### 🔬 8-Feature ML Detection
-The classifier detects AI text using:
-- Vocabulary uniqueness ratio
-- Average word length
-- Sentence length variation (burstiness)
-- Punctuation ratio
-- Average sentence length
-- Filler words ratio (human: "honestly", "tbh", "kinda")
-- Formal words ratio (AI: "furthermore", "moreover", "consequently")
-- Contraction usage (human: "don't", "can't", "i'm")
+## 🔬 How It Works
+
+3 signals fused together into a final score:
+
+```
+Input Text
+    │
+    ├─► GPT-2 Perplexity   → How "predictable" is the text?
+    ├─► Burstiness          → How varied are sentence lengths?
+    └─► 8-Feature Classifier → ML model trained on 1.3M+ samples
+            │
+            ▼
+        Fusion Engine
+    (ML×0.70 + Perplexity×0.20 + Burstiness×0.10)
+            │
+            ▼
+    Final Score [0.0 → 1.0]
+```
+
+### 8 Detection Features
+| Feature | Signal |
+|---------|--------|
+| Vocabulary uniqueness | AI uses more unique words |
+| Average word length | AI uses longer words |
+| Sentence length variation | Human varies more |
+| Punctuation ratio | Different patterns |
+| Average sentence length | AI tends to be longer |
+| Filler words | Human: "honestly", "tbh", "kinda" |
+| Formal words | AI: "furthermore", "moreover", "consequently" |
+| Contractions | Human: "don't", "can't", "i'm" |
 
 ---
 
@@ -39,23 +67,37 @@ The classifier detects AI text using:
 
 | Input | Score | Result |
 |-------|-------|--------|
-| Pure AI paragraph | 95% | 🔴 Correctly detected |
-| Pure Human text | 26% | 🟢 Correctly detected |
-| Mixed paragraph | 61% | 🟡 Correctly uncertain |
-| Mixed 8-sentence text | 4 AI + 4 Human | ✅ Perfect split |
+| Pure AI paragraph | 94% | 🔴 Correctly detected |
+| Pure Human text | 24% | 🟢 Correctly detected |
+| Mixed paragraph (4AI + 4Human) | 58% | 🟡 Perfect split |
+| Student mixing AI+Human | 55% | 🟡 Correctly uncertain |
+
+---
+
+## ✨ Features
+
+- 📄 **PDF Upload** — upload assignment PDFs directly
+- 🎨 **Sentence Heatmap** — color-coded per sentence with confidence bar
+- 📊 **Score Badge** — circular progress with verdict
+- 📋 **Analysis Summary** — intelligent verdict explanation
+- 📥 **PDF Report** — download forensic analysis report
+- 🌙 **Dark Theme** — professional dark UI
+- 🧪 **Sample Texts** — one-click AI/Human/Mixed test samples
+- 📋 **Copy Button** — copy any sentence on hover
+- ⚡ **Progress Bar** — shows analysis steps in real time
 
 ---
 
 ## 👥 Team
 
-| Name | Role | Branch | Files |
-|------|------|--------|-------|
-| Atharva | Team Lead + Backend | `backend` | `main.py`, `schemas.py`, `routers/analyze.py`, `pipeline/*` |
-| Harshad | ML Engineer | `ml-pipeline` | `pipeline/perplexity.py`, `pipeline/burstiness.py`, `pipeline/fusion.py` |
-| Piyush | Data Scientist | `ml-pipeline` | `models/train_classifier.py`, `models/model.pkl` |
-| Aman | Backend Developer | `backend` | `routers/analyze.py`, `schemas.py` |
-| Palak | Frontend Developer | `frontend` | `TextInput.jsx`, `SentenceHeatmap.jsx`, `ScoreBadge.jsx`, `Loader.jsx` |
-| Vedika | Frontend UI/UX | `frontend` | `DownloadReport.jsx`, `colorScale.js`, `index.css`, `tailwind.config.js` |
+| Name | Role | Branch |
+|------|------|--------|
+| **Atharva Vavhal** | Team Lead + Backend | `backend` |
+| **Harshad** | ML Engineer | `ml-pipeline` |
+| **Aman** | Backend Developer | `backend` |
+| **Piyush** | Data Scientist | `ml-pipeline` |
+| **Palak** | Frontend Developer | `frontend` |
+| **Vedika** | Frontend UI/UX | `frontend` |
 
 ---
 
@@ -64,77 +106,59 @@ The classifier detects AI text using:
 ```
 ghostwriter-guard/
 ├── backend/
-│   ├── main.py                  # FastAPI app + CORS setup
-│   ├── schemas.py               # Pydantic request/response models
+│   ├── main.py                  # FastAPI app + CORS
+│   ├── schemas.py               # Pydantic models
 │   ├── requirements.txt         # Python dependencies
+│   ├── Dockerfile               # Railway deployment
 │   ├── routers/
-│   │   └── analyze.py           # POST /api/analyze endpoint
+│   │   └── analyze.py           # POST /api/analyze
 │   ├── pipeline/
-│   │   ├── perplexity.py        # GPT-2 perplexity scoring
-│   │   ├── burstiness.py        # Sentence length std dev
-│   │   ├── classifier.py        # LogisticRegression inference (8 features)
-│   │   └── fusion.py            # Combine 3 signals into final score
+│   │   ├── perplexity.py        # Perplexity scoring
+│   │   ├── burstiness.py        # Sentence variation
+│   │   ├── classifier.py        # 8-feature inference
+│   │   └── fusion.py            # Signal fusion
 │   └── models/
-│       ├── train_classifier.py  # Training script (1.3M sample dataset)
-│       └── model.pkl            # Trained model (93.4% accuracy)
+│       ├── train_classifier.py  # Training script
+│       └── model.pkl            # Trained model (93.4%)
 ├── frontend/
 │   └── src/
 │       ├── components/
-│       │   ├── TextInput.jsx        # Paste area + PDF upload
-│       │   ├── SentenceHeatmap.jsx  # HSL colour per sentence
-│       │   ├── ScoreBadge.jsx       # Overall AI % display
-│       │   ├── DownloadReport.jsx   # jsPDF + html2canvas export
-│       │   └── Loader.jsx           # Spinner during API call
+│       │   ├── TextInput.jsx        # Input + PDF upload
+│       │   ├── SentenceHeatmap.jsx  # Color heatmap
+│       │   ├── ScoreBadge.jsx       # Score display
+│       │   ├── DownloadReport.jsx   # PDF export
+│       │   └── Loader.jsx           # Progress bar
 │       ├── pages/
-│       │   └── Home.jsx             # Main page layout
+│       │   └── Home.jsx             # Main layout
 │       └── utils/
-│           ├── api.js               # Axios call to FastAPI
-│           └── colorScale.js        # Score to HSL colour logic
+│           ├── api.js               # Axios calls
+│           └── colorScale.js        # HSL color logic
 ├── dataset/
-│   ├── download_hc3.py          # Fetch dataset from HuggingFace
-│   └── preprocess.py            # Clean and split train/test
+│   ├── download_hc3.py
+│   └── preprocess.py
 ├── tests/
-│   ├── test_pipeline.py         # ML accuracy tests
-│   ├── test_api.py              # FastAPI endpoint tests
-│   ├── sample_ai.txt            # Known AI-written samples
-│   └── sample_human.txt         # Known human-written samples
-├── README.md
-├── .gitignore
-└── .env.example
+│   ├── test_pipeline.py
+│   └── test_api.py
+└── README.md
 ```
 
 ---
 
-## 🚀 Getting Started
-
-### Prerequisites
-- Python 3.11
-- Node.js 18+
-- pyenv (recommended)
+## 🚀 Getting Started (Local)
 
 ### Backend Setup
 
 ```bash
-# Clone the repo
 git clone https://github.com/AtharvaVavhal/ghostwriter-guard.git
 cd ghostwriter-guard
 
-# Set Python version
 pyenv global 3.11.9
-
-# Install dependencies
-cd backend
-pip install -r requirements.txt
-
-# Download NLTK data
+pip install -r backend/requirements.txt
 python -c "import nltk; nltk.download('punkt_tab')"
+python backend/models/train_classifier.py
 
-# Train the classifier (first time only)
-python models/train_classifier.py
-
-# Run the server (from project root)
-cd ..
-python -m uvicorn backend.main:app --reload --port 8000
+cd backend
+python -m uvicorn main:app --reload --port 8000
 ```
 
 ### Frontend Setup
@@ -142,13 +166,12 @@ python -m uvicorn backend.main:app --reload --port 8000
 ```bash
 cd frontend
 npm install
-npm install axios pdfjs-dist jspdf html2canvas
 npm run dev
 ```
 
-Frontend: `http://localhost:5173`
-Backend: `http://localhost:8000`
-API Docs: `http://localhost:8000/docs`
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:8000`
+- API Docs: `http://localhost:8000/docs`
 
 ---
 
@@ -158,28 +181,19 @@ API Docs: `http://localhost:8000/docs`
 
 **Request:**
 ```json
-{
-  "text": "Your text here..."
-}
+{ "text": "Your text here..." }
 ```
 
 **Response:**
 ```json
 {
   "sentences": [
-    { "sentence": "Sentence 1", "score": 0.95 },
+    { "sentence": "Sentence 1", "score": 0.94 },
     { "sentence": "Sentence 2", "score": 0.24 }
   ],
-  "overall_score": 0.58
+  "overall_score": 0.59
 }
 ```
-
-**Score interpretation:**
-| Score | Label | Color |
-|-------|-------|-------|
-| 0.0 – 0.35 | Human | 🟢 Green |
-| 0.35 – 0.65 | Uncertain | 🟡 Yellow |
-| 0.65 – 1.0 | AI | 🔴 Red |
 
 ### `GET /health`
 ```json
@@ -188,24 +202,8 @@ API Docs: `http://localhost:8000/docs`
 
 ---
 
-## 🔬 ML Pipeline
+## 🧪 Training Details
 
-```
-Input Text
-    │
-    ├─► perplexity.py   → GPT-2 perplexity score
-    ├─► burstiness.py   → Sentence length variation
-    └─► classifier.py   → 8-feature LogisticRegression P(AI)
-            │
-            ▼
-        fusion.py
-    (ML×0.70 + Perplexity×0.20 + Burstiness×0.10)
-            │
-            ▼
-    Final Score [0, 1]
-```
-
-### Training Details
 - **Dataset:** artem9k/ai-text-detection-pile (1.3M samples)
 - **Training samples:** 5,000 human + 5,000 AI
 - **Features:** 8 linguistic features
@@ -214,51 +212,25 @@ Input Text
 
 ---
 
-## ✨ Features
-
-- 📄 **PDF Upload** — upload assignment PDFs directly
-- 🎨 **Sentence Heatmap** — color-coded sentence analysis
-- 📊 **Score Badge** — circular progress indicator
-- 📥 **PDF Report** — download forensic analysis report
-- 🌙 **Dark Theme** — professional dark UI
-- ⚡ **Fast API** — FastAPI backend with async support
-
----
-
-## 🧪 Testing
-
-```bash
-python -m pytest tests/test_pipeline.py
-python -m pytest tests/test_api.py
-```
-
----
-
-## 🌿 Git Workflow
-
-```bash
-git checkout backend        # Atharva + Aman
-git checkout ml-pipeline    # Harshad + Piyush
-git checkout frontend       # Palak + Vedika
-
-git switch main
-git merge <your-branch>
-git push origin main
-```
-
----
-
 ## 📦 Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
 | Backend | FastAPI + Uvicorn |
-| ML | scikit-learn + GPT-2 |
+| ML | scikit-learn LogisticRegression |
 | Frontend | React 18 + Vite |
 | Styling | Tailwind CSS |
-| PDF | jsPDF + html2canvas |
-| Dataset | HuggingFace Datasets |
+| PDF Export | jsPDF + html2canvas |
+| Deployment | Railway |
 
 ---
 
-*Built with ❤️ by Team GhostWriter Guard — Vishwakarma Institute of Technology, Pune*
+## 🔗 Links
+
+- 🐙 GitHub: [AtharvaVavhal/ghostwriter-guard](https://github.com/AtharvaVavhal/ghostwriter-guard)
+- 🌐 Live: [ghostwriter-guard-production.up.railway.app](https://ghostwriter-guard-production.up.railway.app)
+- 💼 LinkedIn: [Project Post](https://www.linkedin.com/posts/atharva-vavhal_machinelearning-ai-python-activity-7439914236039958528-1sf7)
+
+---
+
+*Built with ❤️ by Team GhostWriter Guard*
